@@ -10,16 +10,17 @@ Route::group([
     'middleware' => ['web'],
     'as' => 'wap.cloudflare.'
 ], function (Router $router) {
+    $router->get('upload', 'IndexController@index');
 });
 
 // 接口
 Route::group([
-    'prefix' => 'cf',
+    'prefix' => 'api/cf',
     'namespace' => 'Jncinet\CloudflareStream\Controllers\Api',
     'middleware' => ['api'],
     'as' => 'api.cloudflare.'
 ], function (Router $router) {
-    $router->get('upload', 'IndexController@index');
+
 });
 
 // 后台

@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "afloeter/laravel-cloudflare-stream": "~1.0.0"
+        "guzzlehttp/guzzle": "~6.0"
     },
     "autoload": {
         "psr-4": {
