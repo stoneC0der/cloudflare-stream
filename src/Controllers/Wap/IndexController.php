@@ -8,6 +8,7 @@ class IndexController extends Controller
 {
     public function index()
     {
-        return view('cf-stream::wap.index');
+        $uploadUrl = '';
+        return view('cf-stream::index', compact('uploadUrl'));
     }
 }
