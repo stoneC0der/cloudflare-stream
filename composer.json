@@ -1,5 +1,5 @@
 {
-    "name": "jncinet/qihucms-cloudflare-stream",
+    "name": "jncinet/cloudflare-stream",
     "description": "Cloudflare stream for laravel.",
     "keywords": [
         "laravel",

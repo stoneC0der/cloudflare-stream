@@ -13,7 +13,9 @@ class CloudflareStreamServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton('cloudflare.stream', function () {
+            return new Stream();
+        });
     }
 
     /**
@@ -23,8 +25,6 @@ class CloudflareStreamServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes.php');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'cf-stream');
         $this->publishes([
             __DIR__.'/../config/cloudflare-stream.php' => config_path('cloudflare-stream.php'),
         ]);
