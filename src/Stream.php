@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 
 class Stream extends Base
 {
+    const POSITION = [];
     // 通过链接上传
     public function uploadViaLink(string $vlink)
     {
