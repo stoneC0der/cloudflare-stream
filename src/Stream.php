@@ -29,6 +29,43 @@ class Stream extends Base
         return null;
     }
 
+    /**
+     * Get signed token to be used for video URL
+     *
+     * Access Rules structure
+     * "accessRules": [
+     * {
+     * "type": "ip.geoip.country",
+     * "country": ["US", "MX"],
+     * "action": "allow",
+     * },
+     * {
+     * "type": "ip.src",
+     * "ip": ["93.184.216.0/24", "2400:cb00::/32"],
+     * "action": "allow",
+     * },
+     * {
+     * "type": "any",
+     * "action": "block",
+     * },
+     * ]
+     * Supported types for access rules are any, ip.src, ip.geoip.country
+     * Supported action are allow and block
+     *
+     * @param string $id
+     * @param int $expiresIn
+     * @param bool $downloadable
+     * @param array $accessRules
+     * @return array
+     */
+    public function getStreamSignedToken(string $id, int $expiresIn = 3600, bool $downloadable = false, array $accessRules = []): array
+    {
+        try {
+            $response = $this->http->post("{$id}/token", [
+                "exp" => time() + $expiresIn,
+                "downloadable" => $downloadable,
+                "accessRules" => $accessRules
+            ]);
             return $this->response($response);
         } catch (GuzzleException $e) {
         }
