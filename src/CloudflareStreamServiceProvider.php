@@ -1,6 +1,6 @@
 <?php
 
-namespace Jncinet\CloudflareStream;
+namespace StoneC0der\CloudflareStream;
 
 use Illuminate\Support\ServiceProvider;
 

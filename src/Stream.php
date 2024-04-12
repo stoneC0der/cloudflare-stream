@@ -1,23 +1,71 @@
 <?php
 
-namespace Jncinet\CloudflareStream;
+namespace StoneC0der\CloudflareStream;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 class Stream extends Base
 {
+    const POSITION = [];
     // 通过链接上传
-    public function uploadViaLink(string $vlink)
+    public function uploadViaLink(string $url, array $meta = [], array $options = [])
     {
         try {
             $response = $this->http->post('copy',
                 [
                     RequestOptions::JSON => [
-                        'url' => $vlink
+                        'url' => $url,
+                        'meta' => $meta,
+                        'requireSignedURLs' => $options['require_signed_urls'] ?? false,
+                        'scheduledDeletion' => $options['scheduledDeletion'] ?? null,
+                        'creator' => $options['creator'] ?? null,
                     ]
                 ]);
+            return $this->response($response);
+        } catch (GuzzleException $e) {
+        }
+        return null;
+    }
+
+    /**
+     * Get signed token to be used for video URL
+     *
+     * Access Rules structure
+     * "accessRules": [
+     * {
+     * "type": "ip.geoip.country",
+     * "country": ["US", "MX"],
+     * "action": "allow",
+     * },
+     * {
+     * "type": "ip.src",
+     * "ip": ["93.184.216.0/24", "2400:cb00::/32"],
+     * "action": "allow",
+     * },
+     * {
+     * "type": "any",
+     * "action": "block",
+     * },
+     * ]
+     * Supported types for access rules are any, ip.src, ip.geoip.country
+     * Supported action are allow and block
+     *
+     * @param string $id
+     * @param int $expiresIn
+     * @param bool $downloadable
+     * @param array $accessRules
+     * @return array
+     */
+    public function getStreamSignedToken(string $id, int $expiresIn = 3600, bool $downloadable = false, array $accessRules = []): array
+    {
+        try {
+            $response = $this->http->post("{$id}/token", [
+                "exp" => time() + $expiresIn,
+                "downloadable" => $downloadable,
+                "accessRules" => $accessRules
+            ]);
             return $this->response($response);
         } catch (GuzzleException $e) {
         }
@@ -44,12 +92,15 @@ class Stream extends Base
     }
 
     // 生成上传链接
-    public function directCreatorUploads(int $maxDurationSeconds = 1, int $expirySecond = 0,
-                                         bool $requireSignedURLs = false,
-                                         array $allowedOrigins = [],
-                                         float $thumbnailTimestampPct = 0.0,
-                                         string $watermark = null,
-                                         array $meta = [])
+    public function directCreatorUploads(
+        int $maxDurationSeconds = 1,
+        int $expirySecond = 0,
+        bool $requireSignedURLs = false,
+        array $allowedOrigins = [],
+        float $thumbnailTimestampPct = 0.0,
+        string $watermark = null,
+        array $meta = []
+    )
     {
         $data = [];
         // 用户上传的视频的最长持续时间
