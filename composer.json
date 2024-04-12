@@ -1,33 +1,38 @@
 {
-    "name": "jncinet/cloudflare-stream",
+    "name": "stonec0der/cloudflare-stream",
     "description": "Cloudflare stream for laravel.",
     "keywords": [
         "laravel",
-        "qihucms",
+        "ekangdev",
         "cloudflare",
         "stream"
     ],
-    "homepage": "https://www.qihucms.com",
+    "homepage": "https://www.ekangdev.com",
     "license": "MIT",
     "authors": [
         {
-            "name": "zhangye",
-            "email": "y@qilephp.com"
+            "name": "stoneC0der",
+            "email": "stonecodersoft@gmail.com"
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "^6.2 || ^7.0"
+        "guzzlehttp/guzzle": "^6.2 || ^7.0",
+        "nesbot/carbon": "^2.31",
+        "illuminate/support": "^8.0.0"
     },
     "autoload": {
         "psr-4": {
-            "Jncinet\\CloudflareStream\\": "src/"
+            "StoneC0der\\CloudflareStream\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Jncinet\\CloudflareStream\\CloudflareStreamServiceProvider"
-            ]
+                "StoneC0der\\CloudflareStream\\CloudflareStreamServiceProvider"
+            ],
+            "aliases": {
+                "Stream": "StoneC0der\\CloudflareStream\\Facades\\Stream"
+            }
         }
     }
 }

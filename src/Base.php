@@ -1,6 +1,6 @@
 <?php
 
-namespace Jncinet\CloudflareStream;
+namespace StoneC0der\CloudflareStream;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
@@ -28,7 +28,7 @@ class Base
         $this->http = new Client([
             'base_uri' => `https://api.cloudflare.com/client/v4/accounts/{$this->accountId}/stream/`,
             RequestOptions::HEADERS => [
-                'application/json' => 'application/json',
+                'Accept' => 'application/json',
                 'X-Auth-Email' => $this->authEMail,
                 'X-Auth-Key' => $this->authKey,
             ],
