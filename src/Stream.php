@@ -10,15 +10,25 @@ class Stream extends Base
 {
     const POSITION = [];
     // 通过链接上传
-    public function uploadViaLink(string $vlink)
+    public function uploadViaLink(string $url, array $meta = [], array $options = [])
     {
         try {
             $response = $this->http->post('copy',
                 [
                     RequestOptions::JSON => [
-                        'url' => $vlink
+                        'url' => $url,
+                        'meta' => $meta,
+                        'requireSignedURLs' => $options['require_signed_urls'] ?? false,
+                        'scheduledDeletion' => $options['scheduledDeletion'] ?? null,
+                        'creator' => $options['creator'] ?? null,
                     ]
                 ]);
+            return $this->response($response);
+        } catch (GuzzleException $e) {
+        }
+        return null;
+    }
+
             return $this->response($response);
         } catch (GuzzleException $e) {
         }
