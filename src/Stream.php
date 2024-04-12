@@ -55,12 +55,15 @@ class Stream extends Base
     }
 
     // 生成上传链接
-    public function directCreatorUploads(int $maxDurationSeconds = 1, int $expirySecond = 0,
-                                         bool $requireSignedURLs = false,
-                                         array $allowedOrigins = [],
-                                         float $thumbnailTimestampPct = 0.0,
-                                         string $watermark = null,
-                                         array $meta = [])
+    public function directCreatorUploads(
+        int $maxDurationSeconds = 1,
+        int $expirySecond = 0,
+        bool $requireSignedURLs = false,
+        array $allowedOrigins = [],
+        float $thumbnailTimestampPct = 0.0,
+        string $watermark = null,
+        array $meta = []
+    )
     {
         $data = [];
         // 用户上传的视频的最长持续时间
