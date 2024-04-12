@@ -4,7 +4,7 @@ namespace StoneC0der\CloudflareStream;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 class Stream extends Base
 {
