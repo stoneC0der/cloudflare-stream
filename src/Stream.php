@@ -68,10 +68,44 @@ class Stream extends Base
         return [];
     }
 
+    /**
+     * @throws GuzzleException
+     */
+    public function getVideo(string $uuid): array
+    {
+        try {
+            $response = $this->http->get($uuid);
             return $this->response($response);
-        } catch (GuzzleException $e) {
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException($e);
+        } catch (TooManyRedirectsException $e) {
+            // handle too many redirects
+        } catch (ClientException | ServerException $e) {
+            // ClientException is thrown for 400 level errors if the http_errors request option is set to true.
+            // ServerException is thrown for 500 level errors if the http_errors request option is set to true.
+            if ($e->hasResponse()) {
+                // is HTTP status code, e.g. 500
+                $statusCode = $e->getResponse()->getStatusCode();
+                throw new InvalidArgumentException($statusCode);
+            }
+        } catch (ConnectException $e) {
+            // ConnectException is thrown in the event of a networking error.
+            // This may be an error reported by low level functionality
+            // (e.g.  cURL error)
+            $handlerContext = $e->getHandlerContext();
+            $errno = 0;
+            if ($handlerContext['errno'] ?? 0) {
+                // this is the low level error code, not the HTTP status code!!!
+                // for example 6 for "Couldn't resolve host" (for libcurl)
+                $errno = (int)($handlerContext['errno']);
+            }
+            // get a description of the error
+            $errorMessage = $handlerContext['error'] ?? $e->getMessage();
+            throw new InvalidArgumentException("message: $errorMessage, code: $errno");
+        } catch (Exception $e) {
+            // fallback, in case of other exception
         }
-        return null;
+        return [];
     }
 
     /**
