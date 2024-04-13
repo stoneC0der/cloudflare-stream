@@ -2,27 +2,72 @@
 
 namespace StoneC0der\CloudflareStream;
 
+use Exception;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\RequestOptions;
 use Carbon\Carbon;
+use InvalidArgumentException;
+use JsonException;
 
 class Stream extends Base
 {
-    const POSITION = [];
+    public const POSITION = [];
     // 通过链接上传
-    public function uploadViaLink(string $url, array $meta = [], array $options = [])
+
+    /**
+     * @throws GuzzleException
+     */
+    public function uploadViaLink(string $url, array $options = []): array
     {
         try {
-            $response = $this->http->post('copy',
+            $response = $this->http->post(
+                'copy',
                 [
                     RequestOptions::JSON => [
                         'url' => $url,
-                        'meta' => $meta,
                         'requireSignedURLs' => $options['require_signed_urls'] ?? false,
-                        'scheduledDeletion' => $options['scheduledDeletion'] ?? null,
+                        'scheduledDeletion' => $options['expiry'] ?? null,
                         'creator' => $options['creator'] ?? null,
                     ]
-                ]);
+                ]
+            );
+            return $this->response($response);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException($e);
+        } catch (TooManyRedirectsException $e) {
+            // handle too many redirects
+        } catch (ClientException | ServerException $e) {
+            // ClientException is thrown for 400 level errors if the http_errors request option is set to true.
+            // ServerException is thrown for 500 level errors if the http_errors request option is set to true.
+            if ($e->hasResponse()) {
+                // is HTTP status code, e.g. 500
+                $statusCode = $e->getResponse()->getStatusCode();
+                throw new InvalidArgumentException($statusCode);
+            }
+        } catch (ConnectException $e) {
+            // ConnectException is thrown in the event of a networking error.
+            // This may be an error reported by low level functionality
+            // (e.g.  cURL error)
+            $handlerContext = $e->getHandlerContext();
+            $errno = 0;
+            if ($handlerContext['errno'] ?? 0) {
+                // this is the low level error code, not the HTTP status code!!!
+                // for example 6 for "Couldn't resolve host" (for libcurl)
+                $errno = (int)($handlerContext['errno']);
+            }
+            // get a description of the error
+            $errorMessage = $handlerContext['error'] ?? $e->getMessage();
+            throw new InvalidArgumentException("message: $errorMessage, code: $errno");
+        } catch (Exception $e) {
+            // fallback, in case of other exception
+        }
+        return [];
+    }
+
             return $this->response($response);
         } catch (GuzzleException $e) {
         }
@@ -52,14 +97,18 @@ class Stream extends Base
      * Supported types for access rules are any, ip.src, ip.geoip.country
      * Supported action are allow and block
      *
-     * @param string $id
-     * @param int $expiresIn
-     * @param bool $downloadable
-     * @param array $accessRules
+     * @param  string  $id
+     * @param  int  $expiresIn
+     * @param  bool  $downloadable
+     * @param  array  $accessRules
      * @return array
      */
-    public function getStreamSignedToken(string $id, int $expiresIn = 3600, bool $downloadable = false, array $accessRules = []): array
-    {
+    public function getStreamSignedToken(
+        string $id,
+        int $expiresIn = 3600,
+        bool $downloadable = false,
+        array $accessRules = []
+    ): array {
         try {
             $response = $this->http->post("{$id}/token", [
                 "exp" => time() + $expiresIn,
@@ -67,16 +116,17 @@ class Stream extends Base
                 "accessRules" => $accessRules
             ]);
             return $this->response($response);
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
-        return null;
+        return [];
     }
 
     // 服务端上传
-    public function uploadVideoFile($file)
+    public function uploadVideoFile($file): ?array
     {
         try {
-            $response = $this->http->post('stream',
+            $response = $this->http->post(
+                'stream',
                 [
                     RequestOptions::MULTIPART => [
                         [
@@ -84,9 +134,10 @@ class Stream extends Base
                             'contents' => $file,
                         ]
                     ]
-                ]);
+                ]
+            );
             return $this->response($response);
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
@@ -100,8 +151,7 @@ class Stream extends Base
         float $thumbnailTimestampPct = 0.0,
         string $watermark = null,
         array $meta = []
-    )
-    {
+    ): ?array {
         $data = [];
         // 用户上传的视频的最长持续时间
         $data['maxDurationSeconds'] = $maxDurationSeconds;
@@ -134,28 +184,30 @@ class Stream extends Base
         $data['meta'] = $meta;
 
         try {
-            $response = $this->http->post('direct_upload',
+            $response = $this->http->post(
+                'direct_upload',
                 [
                     RequestOptions::JSON => $data
-                ]);
+                ]
+            );
             return $this->response($response);
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 搜索视频
-    public function search(string $qs)
+    public function search(string $qs): ?array
     {
         try {
             return $this->response($this->http->get('stream?search=' . $qs));
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 设置视频权限
-    public function setVideoAuth($uid)
+    public function setVideoAuth($uid): ?array
     {
         try {
             return $this->response($this->http->post('stream/' . $uid, [
@@ -164,17 +216,23 @@ class Stream extends Base
                     'requireSignedURLs' => true,
                 ]
             ]));
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 上传水印图片
-    public function watermarkUpload($file, string $name = '', float $opacity = 1.0,
-                                    float $padding = 0.05, float $scale = 0.15, int $position = 0)
-    {
+    public function watermarkUpload(
+        $file,
+        string $name = '',
+        float $opacity = 1.0,
+        float $padding = 0.05,
+        float $scale = 0.15,
+        int $position = 0
+    ): ?array {
         try {
-            $response = $this->http->post('watermarks',
+            $response = $this->http->post(
+                'watermarks',
                 [
                     RequestOptions::MULTIPART => [
                         ['name' => 'file', 'contents' => $file,],
@@ -184,19 +242,26 @@ class Stream extends Base
                         ['name' => 'scale', 'contents' => $scale,],
                         ['name' => 'position', 'contents' => self::POSITION[$position],],
                     ]
-                ]);
+                ]
+            );
             return $this->response($response);
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 上传水印图片
-    public function watermarkViaLinkUpload($url, string $name = '', float $opacity = 1.0,
-                                           float $padding = 0.05, float $scale = 0.15, int $position = 0)
-    {
+    public function watermarkViaLinkUpload(
+        $url,
+        string $name = '',
+        float $opacity = 1.0,
+        float $padding = 0.05,
+        float $scale = 0.15,
+        int $position = 0
+    ): ?array {
         try {
-            $response = $this->http->post('watermarks',
+            $response = $this->http->post(
+                'watermarks',
                 [
                     RequestOptions::JSON => [
                         'url' => $url,
@@ -206,9 +271,10 @@ class Stream extends Base
                         'scale' => $scale,
                         'position' => self::POSITION[$position],
                     ]
-                ]);
+                ]
+            );
             return $this->response($response);
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
@@ -218,27 +284,27 @@ class Stream extends Base
     {
         try {
             return $this->response($this->http->get('watermarks/' . $uid));
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 所有水印配置
-    public function watermarks()
+    public function watermarks(): ?array
     {
         try {
             return $this->response($this->http->get('watermarks/'));
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 删除水印配置
-    public function deleteWatermark($uid)
+    public function deleteWatermark($uid): ?array
     {
         try {
             return $this->response($this->http->delete('watermarks/' . $uid));
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
