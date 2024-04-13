@@ -4,42 +4,44 @@ namespace StoneC0der\CloudflareStream;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 
 class Base
 {
-    protected $http;
-    private $accountId;
-    private $authKey;
-    private $authEMail;
+    protected Client $http;
+    protected ?string $accountId;
+    protected ?string $authKey;
+    protected ?string $authEmail;
 
-    public function __construct(array $config = [])
+    public function __construct()
     {
-        if (empty($config)) {
-            $this->accountId = config('cloudflare-stream.accountId');
-            $this->authKey = config('cloudflare-stream.authKey');
-            $this->authEMail = config('cloudflare-stream.authEMail');
-        } else {
-            $this->accountId = $config['account_id'];
-            $this->authKey = $config['auth_key'];
-            $this->authEMail = $config['auth_email'];
-        }
+        $this->accountId = config('cloudflare-stream.accountId');
+        $this->authKey = config('cloudflare-stream.authKey');
+        $this->authEmail = config('cloudflare-stream.authEMail');
 
-        $this->http = new Client([
-            'base_uri' => `https://api.cloudflare.com/client/v4/accounts/{$this->accountId}/stream/`,
+        $this->http = new Client(['base_uri' => "https://api.cloudflare.com/client/v4/accounts/$this->accountId/stream/",
             RequestOptions::HEADERS => [
                 'Accept' => 'application/json',
-                'X-Auth-Email' => $this->authEMail,
-                'X-Auth-Key' => $this->authKey,
+                'Content-Type' => 'application/json',
+                'Tus-Resumable' => '1.0.0',
+                'Upload-Creator' => auth()->id(),
+                'Upload-Length' => '',
+                'Upload-Metadata' => '',
+                'X-Auth-Email' => $this->authEmail,
+                'Authorization' => "Bearer $this->authKey",
             ],
         ]);
     }
 
-    protected function response(ResponseInterface $response) {
+    /**
+     * @throws JsonException
+     */
+    protected function response(ResponseInterface $response): array
+    {
         if ($response->getReasonPhrase() === 'OK') {
-            return json_decode((string)$response->getBody(), true);
+            return json_decode((string)$response->getBody(), true, 100, JSON_THROW_ON_ERROR);
         }
-
-        return null;
+        return [];
     }
 }
