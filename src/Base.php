@@ -25,7 +25,9 @@ class Base
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
                 'Tus-Resumable' => '1.0.0',
-                'Upload-Creator' => auth()->id(),
+                'Upload-Creator' => 'creator-id_'. auth()->user()->first_name
+                    ?? auth()->user()->name ?? 'N/A'
+                    .auth()->id() ?? auth()->user()->uuid ?? '',
                 'Upload-Length' => '',
                 'Upload-Metadata' => '',
                 'X-Auth-Email' => $this->authEmail,
