@@ -29,6 +29,7 @@ class Stream extends Base
                 [
                     RequestOptions::JSON => [
                         'url' => $url,
+                        'meta' => $options['meta'] ?? [],
                         'requireSignedURLs' => $options['require_signed_urls'] ?? false,
                         'scheduledDeletion' => $options['expiry'] ?? null,
                         'creator' => $options['creator'] ?? null,
