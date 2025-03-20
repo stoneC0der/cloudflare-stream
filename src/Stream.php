@@ -39,7 +39,7 @@ class Stream extends Base
     {
         try {
             $response = $this->http->post(
-                'copy',
+                'stream/copy',
                 [
                     RequestOptions::JSON => array_filter([
                         'url' => $url,
@@ -77,7 +77,7 @@ class Stream extends Base
     public function getVideo(string $uuid): array
     {
         try {
-            $response = $this->http->get($uuid, [
+            $response = $this->http->get("stream/$uuid", [
                 RequestOptions::HEADERS => [
                     'Content-Type' => 'application/json',
                     'X-Auth-Email' => $this->authEmail,

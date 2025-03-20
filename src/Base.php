@@ -20,7 +20,7 @@ class Base
         $this->authEmail = env('cloudflare-stream.authEMail');
 
         $this->http = new Client([
-            'base_uri' => "https://api.cloudflare.com/client/v4/accounts/$this->accountId/stream/",
+            'base_uri' => "https://api.cloudflare.com/client/v4/accounts/$this->accountId/"
         ]);
     }
 
