@@ -14,6 +14,24 @@ class Stream extends Base
     public const POSITION = [];
     // 通过链接上传
 
+    public function verifyToken(string $token): array
+    {
+        try {
+            $response = $this->http->get('token/verify', [
+                RequestOptions::HEADERS => [
+                    'Authorization' => "Bearer $this->authKey",
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
+
+            return $this->response($response);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        } catch (ClientException $e) {
+            throw new InvalidArgumentException($e->getResponse()->getBody()->getContents());
+        }
+    }
+
     /**
      * @throws GuzzleException
      */
