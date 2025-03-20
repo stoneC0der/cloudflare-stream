@@ -2,12 +2,8 @@
 
 namespace StoneC0der\CloudflareStream;
 
-use Exception;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\ServerException;
-use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\RequestOptions;
 use Carbon\Carbon;
 use InvalidArgumentException;
@@ -27,44 +23,32 @@ class Stream extends Base
             $response = $this->http->post(
                 'copy',
                 [
-                    RequestOptions::JSON => [
+                    RequestOptions::JSON => array_filter([
                         'url' => $url,
-                        'meta' => $options['meta'] ?? [],
+                        'allowedOrigins' => $options['allowedOrigins'] ?? null,
+                        'creator' => $options['creator'] ?? null,
+                        'meta' => $options['meta'] ?? null,
                         'requireSignedURLs' => $options['require_signed_urls'] ?? false,
                         'scheduledDeletion' => $options['expiry'] ?? null,
-                        'creator' => $options['creator'] ?? null,
-                    ]
+                        'thumbnailTimestampPct' => $options['thumbnailTimestampPct'] ?? 0,
+                    ]),
+                    RequestOptions::HEADERS => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'Tus-Resumable' => '1.0.0',
+                        'Upload-Creator' => 'creator-id_' . $options['creator'] ?? null,
+                        'Upload-Length' => '',
+                        'Upload-Metadata' => '',
+                        'X-Auth-Email' => $this->authEmail,
+                        'Authorization' => "Bearer $this->authKey",
+                    ],
                 ]
             );
             return $this->response($response);
         } catch (JsonException $e) {
-            throw new InvalidArgumentException($e);
-        } catch (TooManyRedirectsException $e) {
-            // handle too many redirects
-        } catch (ClientException | ServerException $e) {
-            // ClientException is thrown for 400 level errors if the http_errors request option is set to true.
-            // ServerException is thrown for 500 level errors if the http_errors request option is set to true.
-            if ($e->hasResponse()) {
-                // is HTTP status code, e.g. 500
-                $statusCode = $e->getResponse()->getStatusCode();
-                throw new InvalidArgumentException($statusCode);
-            }
-        } catch (ConnectException $e) {
-            // ConnectException is thrown in the event of a networking error.
-            // This may be an error reported by low level functionality
-            // (e.g.  cURL error)
-            $handlerContext = $e->getHandlerContext();
-            $errno = 0;
-            if ($handlerContext['errno'] ?? 0) {
-                // this is the low level error code, not the HTTP status code!!!
-                // for example 6 for "Couldn't resolve host" (for libcurl)
-                $errno = (int)($handlerContext['errno']);
-            }
-            // get a description of the error
-            $errorMessage = $handlerContext['error'] ?? $e->getMessage();
-            throw new InvalidArgumentException("message: $errorMessage, code: $errno");
-        } catch (Exception $e) {
-            // fallback, in case of other exception
+            throw new InvalidArgumentException($e->getMessage());
+        } catch (ClientException $e) {
+            throw new InvalidArgumentException($e->getResponse()->getBody()->getContents());
         }
         return [];
     }
@@ -75,36 +59,18 @@ class Stream extends Base
     public function getVideo(string $uuid): array
     {
         try {
-            $response = $this->http->get($uuid);
+            $response = $this->http->get($uuid, [
+                RequestOptions::HEADERS => [
+                    'Content-Type' => 'application/json',
+                    'X-Auth-Email' => $this->authEmail,
+                    'Authorization' => "Bearer $this->authKey",
+                ]
+            ]);
             return $this->response($response);
         } catch (JsonException $e) {
-            throw new InvalidArgumentException($e);
-        } catch (TooManyRedirectsException $e) {
-            // handle too many redirects
-        } catch (ClientException | ServerException $e) {
-            // ClientException is thrown for 400 level errors if the http_errors request option is set to true.
-            // ServerException is thrown for 500 level errors if the http_errors request option is set to true.
-            if ($e->hasResponse()) {
-                // is HTTP status code, e.g. 500
-                $statusCode = $e->getResponse()->getStatusCode();
-                throw new InvalidArgumentException($statusCode);
-            }
-        } catch (ConnectException $e) {
-            // ConnectException is thrown in the event of a networking error.
-            // This may be an error reported by low level functionality
-            // (e.g.  cURL error)
-            $handlerContext = $e->getHandlerContext();
-            $errno = 0;
-            if ($handlerContext['errno'] ?? 0) {
-                // this is the low level error code, not the HTTP status code!!!
-                // for example 6 for "Couldn't resolve host" (for libcurl)
-                $errno = (int)($handlerContext['errno']);
-            }
-            // get a description of the error
-            $errorMessage = $handlerContext['error'] ?? $e->getMessage();
-            throw new InvalidArgumentException("message: $errorMessage, code: $errno");
-        } catch (Exception $e) {
-            // fallback, in case of other exception
+            throw new InvalidArgumentException($e->getMessage());
+        } catch (ClientException $e) {
+            throw new InvalidArgumentException($e->getResponse()->getBody()->getContents());
         }
         return [];
     }
