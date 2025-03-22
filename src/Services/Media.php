@@ -32,7 +32,7 @@ trait Media
     {
 
         $response = $this->http->post(
-            'stream/copy',
+            'accounts/$this->accountId/stream/copy',
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -55,7 +55,7 @@ trait Media
     {
 
         $response = $this->http->post(
-            'stream/direct_upload',
+            'accounts/$this->accountId/stream/direct_upload',
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -80,7 +80,7 @@ trait Media
     public function createDownload(string $uid, array $data): array
     {
         $response = $this->http->post(
-            "stream/$uid/downloads",
+            "accounts/$this->accountId/stream/$uid/downloads",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -104,7 +104,7 @@ trait Media
     public function deleteDownload(string $uid): array
     {
         $response = $this->http->delete(
-            "stream/$uid/downloads",
+            "accounts/$this->accountId/stream/$uid/downloads",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -126,7 +126,7 @@ trait Media
     public function getDownload(string $uid): array
     {
         $response = $this->http->get(
-            "stream/$uid/downloads",
+            "accounts/$this->accountId/stream/$uid/downloads",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -150,7 +150,7 @@ trait Media
     public function updateVideo(string $uid, array $data): array
     {
         $response = $this->http->put(
-            "stream/$uid",
+            "accounts/$this->accountId/stream/$uid",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -196,7 +196,7 @@ trait Media
     public function getVideo(string $uid): array
     {
         $response = $this->http->get(
-            "stream/$uid",
+            "accounts/$this->accountId/stream/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -219,7 +219,7 @@ trait Media
     public function deleteVideo(string $uid): array
     {
         $response = $this->http->delete(
-            "stream/$uid",
+            "accounts/$this->accountId/stream/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -248,7 +248,7 @@ trait Media
     public function createAudio(string $uid, array $data = []): array
     {
         $response = $this->http->post(
-            "stream/$uid/audio/copy",
+            "accounts/$this->accountId/stream/$uid/audio/copy",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -272,7 +272,7 @@ trait Media
     public function getAudio(string $uid): array
     {
         $response = $this->http->get(
-            "stream/$uid/audio",
+            "accounts/$this->accountId/stream/$uid/audio",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -297,7 +297,7 @@ trait Media
     public function updateAudio(string $uid, string $audioUid, array $data): array
     {
         $response = $this->http->put(
-            "stream/$uid/audio/$audioUid",
+            "accounts/$this->accountId/stream/$uid/audio/$audioUid",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -322,7 +322,7 @@ trait Media
     public function deleteAudio(string $uid, string $audioUid): array
     {
         $response = $this->http->delete(
-            "stream/$uid/audio/$audioUid",
+            "accounts/$this->accountId/stream/$uid/audio/$audioUid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',

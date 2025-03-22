@@ -20,7 +20,7 @@ trait Base
         $this->authEmail = config('cloudflare-stream.authEMail');
 
         $this->http = new Client([
-            'base_uri' => "https://api.cloudflare.com/client/v4/accounts/$this->accountId/"
+            'base_uri' => "https://api.cloudflare.com/client/v4/"
         ]);
     }
 

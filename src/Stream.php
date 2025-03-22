@@ -179,7 +179,7 @@ class Stream
     // public function setVideoAuth($uid): ?array
     // {
     //     try {
-    //         return $this->response($this->http->post('stream/' . $uid, [
+    //         return $this->response($this->http->post('accounts/$this->accountId/stream/' . $uid, [
     //             RequestOptions::JSON => [
     //                 'uid' => $uid,
     //                 'requireSignedURLs' => true,

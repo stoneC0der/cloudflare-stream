@@ -13,7 +13,7 @@ trait Utils
     {
 
         $response = $this->http->get(
-            "stream/$uid/embed",
+            "accounts/$this->accountId/stream/$uid/embed",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -30,7 +30,7 @@ trait Utils
     public function getStorageUsage(): array
     {
         $response = $this->http->get(
-            'stream/storage-usage',
+            'accounts/$this->accountId/stream/storage-usage',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -47,7 +47,7 @@ trait Utils
     public function verifyToken(): array
     {
         $response = $this->http->get(
-            'token/verify',
+            'user/token/verify',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -64,7 +64,7 @@ trait Utils
     public function createSignedUrlToken(string $uid, array $data): array
     {
         $response = $this->http->post(
-            "stream/$uid/token",
+            "accounts/$this->accountId/stream/$uid/token",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -82,7 +82,7 @@ trait Utils
     public function clipVideo(array $data): array
     {
         $response = $this->http->post(
-            'stream/clip',
+            'accounts/$this->accountId/stream/clip',
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -107,7 +107,7 @@ trait Utils
     public function createWebhook(array $data): array
     {
         $response = $this->http->post(
-            'stream/webhook',
+            'accounts/$this->accountId/stream/webhook',
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -130,7 +130,7 @@ trait Utils
     public function deleteWebhook(): array
     {
         $response = $this->http->delete(
-            'stream/webhook',
+            'accounts/$this->accountId/stream/webhook',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -152,7 +152,7 @@ trait Utils
     public function getWebhooks(): array
     {
         $response = $this->http->get(
-            'stream/webhook',
+            'accounts/$this->accountId/stream/webhook',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -176,7 +176,7 @@ trait Utils
     public function createWatermark(array $data): array
     {
         $response = $this->http->post(
-            'stream/watermarks',
+            'accounts/$this->accountId/stream/watermarks',
             [
                 RequestOptions::MULTIPART => $data,
                 RequestOptions::HEADERS => [
@@ -199,7 +199,7 @@ trait Utils
     public function getWatermarks(): array
     {
         $response = $this->http->get(
-            'stream/watermarks',
+            'accounts/$this->accountId/stream/watermarks',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -222,7 +222,7 @@ trait Utils
     public function getWatermark(string $uid): array
     {
         $response = $this->http->get(
-            "stream/watermarks/$uid",
+            "accounts/$this->accountId/stream/watermarks/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -245,7 +245,7 @@ trait Utils
     public function deleteWatermark(string $uid): array
     {
         $response = $this->http->delete(
-            "stream/watermarks/$uid",
+            "accounts/$this->accountId/stream/watermarks/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -268,7 +268,7 @@ trait Utils
     public function createKey(array $data): array
     {
         $response = $this->http->post(
-            'stream/keys',
+            'accounts/$this->accountId/stream/keys',
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -292,7 +292,7 @@ trait Utils
     public function deleteKey(string $uid): array
     {
         $response = $this->http->delete(
-            "stream/keys/$uid",
+            "accounts/$this->accountId/stream/keys/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -314,7 +314,7 @@ trait Utils
     public function getKeys(): array
     {
         $response = $this->http->get(
-            'stream/keys',
+            'accounts/$this->accountId/stream/keys',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',

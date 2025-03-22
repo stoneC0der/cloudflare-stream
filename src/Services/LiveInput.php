@@ -18,7 +18,7 @@ trait LiveInput
     public function createLiveInput(array $data): array
     {
         $response = $this->http->post(
-            "stream/live_inputs",
+            "accounts/$this->accountId/stream/live_inputs",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -42,7 +42,7 @@ trait LiveInput
     public function getLiveInputs(bool $includeCounts = false): array
     {
         $response = $this->http->get(
-            "stream/live_inputs",
+            "accounts/$this->accountId/stream/live_inputs",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -65,7 +65,7 @@ trait LiveInput
     public function getLiveInput(string $uid): array
     {
         $response = $this->http->get(
-            "stream/live_inputs/$uid",
+            "accounts/$this->accountId/stream/live_inputs/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -89,7 +89,7 @@ trait LiveInput
     public function updateLiveInput(string $uid, array $data): array
     {
         $response = $this->http->put(
-            "stream/live_inputs/$uid",
+            "accounts/$this->accountId/stream/live_inputs/$uid",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -113,7 +113,7 @@ trait LiveInput
     public function deleteLiveInput(string $uid): array
     {
         $response = $this->http->delete(
-            "stream/live_inputs/$uid",
+            "accounts/$this->accountId/stream/live_inputs/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -137,7 +137,7 @@ trait LiveInput
     public function createOutput(string $uid, array $data): array
     {
         $response = $this->http->post(
-            "stream/live_inputs/$uid/outputs",
+            "accounts/$this->accountId/stream/live_inputs/$uid/outputs",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -161,7 +161,7 @@ trait LiveInput
     public function getOutputs(string $uid): array
     {
         $response = $this->http->get(
-            "stream/live_inputs/$uid/outputs",
+            "accounts/$this->accountId/stream/live_inputs/$uid/outputs",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -186,7 +186,7 @@ trait LiveInput
     public function updateOutput(string $uid, string $outputUid, array $data): array
     {
         $response = $this->http->put(
-            "stream/live_inputs/$outputUid/output/$uid",
+            "accounts/$this->accountId/stream/live_inputs/$outputUid/output/$uid",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -211,7 +211,7 @@ trait LiveInput
     public function deleteOutput(string $uid, string $outputUid): array
     {
         $response = $this->http->delete(
-            "stream/live_inputs/$outputUid/output/$uid",
+            "accounts/$this->accountId/stream/live_inputs/$outputUid/output/$uid",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',

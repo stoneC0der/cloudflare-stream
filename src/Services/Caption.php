@@ -19,7 +19,7 @@ trait Caption
     public function generate(string $uid, string $lang): array
     {
         $response = $this->http->post(
-            "stream/$uid/captions/$lang/generate",
+            "accounts/$this->accountId/stream/$uid/captions/$lang/generate",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -43,7 +43,7 @@ trait Caption
     public function getCaptions(string $uid): array
     {
         $response = $this->http->get(
-            "stream/$uid/captions",
+            "accounts/$this->accountId/stream/$uid/captions",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -67,7 +67,7 @@ trait Caption
     public function getForLanguage(string $uid, string $lang): array
     {
         $response = $this->http->get(
-            "stream/$uid/captions/$lang",
+            "accounts/$this->accountId/stream/$uid/captions/$lang",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -87,7 +87,7 @@ trait Caption
     public function getVtt(string $uid, string $lang): array
     {
         $response = $this->http->get(
-            "stream/$uid/captions/$lang",
+            "accounts/$this->accountId/stream/$uid/captions/$lang",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -112,7 +112,7 @@ trait Caption
     public function uploadCaption(string $uid, string $lang, array $data): array
     {
         $response = $this->http->put(
-            "stream/$uid/caption/$lang",
+            "accounts/$this->accountId/stream/$uid/caption/$lang",
             [
                 RequestOptions::JSON => $data,
                 RequestOptions::HEADERS => [
@@ -137,7 +137,7 @@ trait Caption
     public function deleteCaption(string $uid, string $lang): array
     {
         $response = $this->http->delete(
-            "stream/$uid/captions/$lang",
+            "accounts/$this->accountId/stream/$uid/captions/$lang",
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
