@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
 
-class Base
+trait Base
 {
     protected Client $http;
     protected ?string $accountId;

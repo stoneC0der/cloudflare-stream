@@ -8,23 +8,22 @@ use GuzzleHttp\RequestOptions;
 use Carbon\Carbon;
 use InvalidArgumentException;
 use JsonException;
+use StoneC0der\CloudflareStream\Services\Caption;
+use StoneC0der\CloudflareStream\Services\LiveInput;
+use StoneC0der\CloudflareStream\Services\Media;
+use StoneC0der\CloudflareStream\Services\Utils;
 
-class Stream extends Base
+class Stream
 {
+    use Caption, LiveInput, Media, Utils;
+    
     public const POSITION = [];
     // 通过链接上传
 
-    public function verifyToken(string $token): array
+    public function checkToken(): array
     {
         try {
-            $response = $this->http->get('token/verify', [
-                RequestOptions::HEADERS => [
-                    'Authorization' => "Bearer $this->authKey",
-                    'Content-Type' => 'application/json',
-                ],
-            ]);
-
-            return $this->response($response);
+            return $this->verifyToken();
         } catch (JsonException $e) {
             throw new InvalidArgumentException($e->getMessage());
         } catch (ClientException $e) {
@@ -38,31 +37,16 @@ class Stream extends Base
     public function uploadViaLink(string $url, array $options = []): array
     {
         try {
-            $response = $this->http->post(
-                'stream/copy',
-                [
-                    RequestOptions::JSON => array_filter([
-                        'url' => $url,
-                        'allowedOrigins' => $options['allowedOrigins'] ?? null,
-                        'creator' => $options['creator'] ?? null,
-                        'meta' => $options['meta'] ?? null,
-                        'requireSignedURLs' => $options['require_signed_urls'] ?? false,
-                        'scheduledDeletion' => $options['expiry'] ?? null,
-                        'thumbnailTimestampPct' => $options['thumbnailTimestampPct'] ?? 0,
-                    ]),
-                    RequestOptions::HEADERS => [
-                        'Accept' => 'application/json',
-                        'Content-Type' => 'application/json',
-                        'Tus-Resumable' => '1.0.0',
-                        'Upload-Creator' => 'creator-id_' . $options['creator'] ?? null,
-                        'Upload-Length' => '',
-                        'Upload-Metadata' => '',
-                        'X-Auth-Email' => $this->authEmail,
-                        'Authorization' => "Bearer $this->authKey",
-                    ],
-                ]
-            );
-            return $this->response($response);
+            $data = array_filter([
+                'url' => $url,
+                'allowedOrigins' => $options['allowedOrigins'] ?? null,
+                'creator' => $options['creator'] ?? null,
+                'meta' => $options['meta'] ?? null,
+                'requireSignedURLs' => $options['require_signed_urls'] ?? false,
+                'scheduledDeletion' => $options['expiry'] ?? null,
+                'thumbnailTimestampPct' => $options['thumbnailTimestampPct'] ?? 0,
+            ]);
+            return $this->copy($data);
         } catch (JsonException $e) {
             throw new InvalidArgumentException($e->getMessage());
         } catch (ClientException $e) {
@@ -74,17 +58,10 @@ class Stream extends Base
     /**
      * @throws GuzzleException
      */
-    public function getVideo(string $uuid): array
+    public function getVideo(string $uid): array
     {
         try {
-            $response = $this->http->get("stream/$uuid", [
-                RequestOptions::HEADERS => [
-                    'Content-Type' => 'application/json',
-                    'X-Auth-Email' => $this->authEmail,
-                    'Authorization' => "Bearer $this->authKey",
-                ]
-            ]);
-            return $this->response($response);
+            return $this->getVideo($uid);
         } catch (JsonException $e) {
             throw new InvalidArgumentException($e->getMessage());
         } catch (ClientException $e) {
@@ -122,44 +99,23 @@ class Stream extends Base
      * @param  array  $accessRules
      * @return array
      */
-    public function getStreamSignedToken(
-        string $id,
-        int $expiresIn = 3600,
-        bool $downloadable = false,
-        array $accessRules = []
-    ): array {
-        try {
-            $response = $this->http->post("{$id}/token", [
-                "exp" => time() + $expiresIn,
-                "downloadable" => $downloadable,
-                "accessRules" => $accessRules
-            ]);
-            return $this->response($response);
-        } catch (GuzzleException | JsonException $e) {
-        }
-        return [];
-    }
-
-    // 服务端上传
-    public function uploadVideoFile($file): ?array
-    {
-        try {
-            $response = $this->http->post(
-                'stream',
-                [
-                    RequestOptions::MULTIPART => [
-                        [
-                            'name' => 'file',
-                            'contents' => $file,
-                        ]
-                    ]
-                ]
-            );
-            return $this->response($response);
-        } catch (GuzzleException | JsonException $e) {
-        }
-        return null;
-    }
+    // public function getStreamSignedToken(
+    //     string $id,
+    //     int $expiresIn = 3600,
+    //     bool $downloadable = false,
+    //     array $accessRules = []
+    // ): array {
+    //     try {
+    //         $response = $this->http->post("{$id}/token", [
+    //             "exp" => time() + $expiresIn,
+    //             "downloadable" => $downloadable,
+    //             "accessRules" => $accessRules
+    //         ]);
+    //         return $this->response($response);
+    //     } catch (GuzzleException | JsonException $e) {
+    //     }
+    //     return [];
+    // }
 
     // 生成上传链接
     public function directCreatorUploads(
@@ -203,13 +159,7 @@ class Stream extends Base
         $data['meta'] = $meta;
 
         try {
-            $response = $this->http->post(
-                'direct_upload',
-                [
-                    RequestOptions::JSON => $data
-                ]
-            );
-            return $this->response($response);
+            return $this->directUpload($data);
         } catch (GuzzleException | JsonException $e) {
         }
         return null;
@@ -219,29 +169,29 @@ class Stream extends Base
     public function search(string $qs): ?array
     {
         try {
-            return $this->response($this->http->get('stream?search=' . $qs));
+            return $this->searchVideo($qs);
         } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
-    // 设置视频权限
-    public function setVideoAuth($uid): ?array
-    {
-        try {
-            return $this->response($this->http->post('stream/' . $uid, [
-                RequestOptions::JSON => [
-                    'uid' => $uid,
-                    'requireSignedURLs' => true,
-                ]
-            ]));
-        } catch (GuzzleException | JsonException $e) {
-        }
-        return null;
-    }
+    // // 设置视频权限
+    // public function setVideoAuth($uid): ?array
+    // {
+    //     try {
+    //         return $this->response($this->http->post('stream/' . $uid, [
+    //             RequestOptions::JSON => [
+    //                 'uid' => $uid,
+    //                 'requireSignedURLs' => true,
+    //             ]
+    //         ]));
+    //     } catch (GuzzleException | JsonException $e) {
+    //     }
+    //     return null;
+    // }
 
     // 上传水印图片
-    public function watermarkUpload(
+    public function addWatermark(
         $file,
         string $name = '',
         float $opacity = 1.0,
@@ -250,59 +200,25 @@ class Stream extends Base
         int $position = 0
     ): ?array {
         try {
-            $response = $this->http->post(
-                'watermarks',
-                [
-                    RequestOptions::MULTIPART => [
-                        ['name' => 'file', 'contents' => $file,],
-                        ['name' => 'name', 'contents' => $name,],
-                        ['name' => 'opacity', 'contents' => $opacity,],
-                        ['name' => 'padding', 'contents' => $padding,],
-                        ['name' => 'scale', 'contents' => $scale,],
-                        ['name' => 'position', 'contents' => self::POSITION[$position],],
-                    ]
-                ]
-            );
-            return $this->response($response);
-        } catch (GuzzleException | JsonException $e) {
-        }
-        return null;
-    }
-
-    // 上传水印图片
-    public function watermarkViaLinkUpload(
-        $url,
-        string $name = '',
-        float $opacity = 1.0,
-        float $padding = 0.05,
-        float $scale = 0.15,
-        int $position = 0
-    ): ?array {
-        try {
-            $response = $this->http->post(
-                'watermarks',
-                [
-                    RequestOptions::JSON => [
-                        'url' => $url,
-                        'name' => $name,
-                        'opacity' => $opacity,
-                        'padding' => $padding,
-                        'scale' => $scale,
-                        'position' => self::POSITION[$position],
-                    ]
-                ]
-            );
-            return $this->response($response);
+            $data = [
+                ['name' => 'file', 'contents' => $file,],
+                ['name' => 'name', 'contents' => $name,],
+                ['name' => 'opacity', 'contents' => $opacity,],
+                ['name' => 'padding', 'contents' => $padding,],
+                ['name' => 'scale', 'contents' => $scale,],
+                ['name' => 'position', 'contents' => self::POSITION[$position],],
+            ];
+            return $this->createWatermark($data);
         } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 水印配置信息
-    public function watermarkInfo(string $uid)
+    public function watermark(string $uid)
     {
         try {
-            return $this->response($this->http->get('watermarks/' . $uid));
+            return $this->getWatermark($uid);
         } catch (GuzzleException | JsonException $e) {
         }
         return null;
@@ -312,17 +228,17 @@ class Stream extends Base
     public function watermarks(): ?array
     {
         try {
-            return $this->response($this->http->get('watermarks/'));
+            return $this->getWatermarks();
         } catch (GuzzleException | JsonException $e) {
         }
         return null;
     }
 
     // 删除水印配置
-    public function deleteWatermark($uid): ?array
+    public function removeWatermark($uid): ?array
     {
         try {
-            return $this->response($this->http->delete('watermarks/' . $uid));
+            return $this->deleteWatermark($uid);
         } catch (GuzzleException | JsonException $e) {
         }
         return null;
