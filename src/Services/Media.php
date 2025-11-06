@@ -170,7 +170,7 @@ trait Media
      *
      * @return array
      */
-    public function getVideos(): array
+    public function all(): array
     {
         $response = $this->http->get(
             'stream',
@@ -193,7 +193,7 @@ trait Media
      * @param string $uid
      * @return array
      */
-    public function getVideo(string $uid): array
+    public function get(string $uid): array
     {
         $response = $this->http->get(
             "accounts/$this->accountId/stream/$uid",

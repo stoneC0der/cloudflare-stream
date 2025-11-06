@@ -61,7 +61,7 @@ class Stream
     public function getVideo(string $uid): array
     {
         try {
-            return $this->getVideo($uid);
+            return $this->get($uid);
         } catch (JsonException $e) {
             throw new InvalidArgumentException($e->getMessage());
         } catch (ClientException $e) {
